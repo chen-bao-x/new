@@ -1,0 +1,8 @@
+[package]
+name = "new-some-thing"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+prettytable-rs = "0.10.0"
+structopt = "0.3.26"
