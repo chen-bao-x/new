@@ -1,40 +1,50 @@
 use colored::*;
-use std::env;
+use messages::usage;
 use std::ffi::OsStr;
-use std::fs;
 use std::fs::File;
 use std::path::Path;
 use std::process::exit;
+use std::{fs, io};
+
+mod messages;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let binding = usage();
+    let app = Opt::clap()
+        .usage(binding.as_str())
+        .about("new -- 一个快速创建文件和文件夹的程序")
+        .author("chen bao");
+    let app2 = app.clone();
 
-    if args.len() < 2 {
-        println!("n 快速创建文件和文件夹");
-        println!(
-            r##"使用方式:
-    n filename.txt
-    n foldername/       # 创建文件夹时末尾一定要有 "/"
-    n folder_1/folder_2/filename.txt
-"##
-        );
-    } else {
-        let first_arg = &args[1];
-        let path = Path::new(first_arg);
+    let opt = Opt::from_clap(&app.get_matches());
 
-        let absolute_path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+    let first_arg = &opt.file;
 
-        if path.exists() {
-            println!(
-                "此处已有同名文件, 位于: {}",
-                absolute_path.to_string_lossy().green().underline()
-            );
+    match first_arg {
+        None => {
+            let mut out = io::stdout();
+            let _ = app2.write_help(&mut out);
+
             return;
         }
+        Some(path) if path.exists() => {
+            let absolute_path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+            let folder_name = (path.file_name().unwrap_or(OsStr::new("示例字符串")))
+                .to_str()
+                .unwrap_or("");
 
-        if first_arg.ends_with("/") {
+            println!(
+                "此处已有同名文件 {}\n位于: {}",
+                folder_name.magenta(),
+                absolute_path.to_string_lossy().green().underline()
+            );
+        }
+
+        Some(path) if path.to_string_lossy().ends_with("/") => {
             create_dir(path);
-        } else {
+        }
+
+        Some(path) => {
             create_file(path);
         }
     }
@@ -60,17 +70,20 @@ fn create_file(path: &Path) {
 
     match re {
         Err(err) => {
-            print! {"path: {:?}  err: {:?}",path,err}
+            print!("创建文件时出错: ");
+            eprintln! {"path: {:?}  err: {}",path,err}
         }
         Ok(_) => {
+            let absolute_path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+
             let filename = (path.file_name().unwrap_or(OsStr::new("示例字符串")))
                 .to_str()
                 .unwrap_or("");
 
             println!(
-                "文件创建成功 {} at {}",
+                "文件创建成功\n{} at {}",
                 filename.magenta(),
-                path.to_string_lossy().green().underline()
+                absolute_path.to_string_lossy().green().underline()
             )
         }
     };
@@ -83,12 +96,29 @@ fn create_dir(path: &Path) {
 
     match fs::create_dir_all(path) {
         Ok(_) => {
+            let absolute_path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
             println!(
-                "文件夹创建成功。\n {} at {}",
+                "文件夹创建成功。\n{} at {}",
                 folder_name.magenta(),
-                path.to_string_lossy().green().underline()
+                absolute_path.to_string_lossy().green().underline()
             );
         }
         Err(e) => eprintln!("创建文件夹 {:?} 失败: {}", folder_name, e),
     }
 }
+
+use std::path::PathBuf;
+use structopt::StructOpt;
+
+/// A basic example
+#[derive(StructOpt, Debug)]
+#[structopt(name = "new")]
+struct Opt {
+    /// 文件名 | 文件夹名 | path/to/new/file.txt
+    #[structopt(name = "filename or foldername/", parse(from_os_str))]
+    file: Option<PathBuf>,
+}
+
+// command -- function
+// flag   -- function | enum
+// <name> -- paramter string | number | bool | Array<T> | enum
