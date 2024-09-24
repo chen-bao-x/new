@@ -4,7 +4,7 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::path::Path;
 use std::process::exit;
-use std::{fs, io};
+use std::{fs, io, string};
 
 mod messages;
 
@@ -18,42 +18,25 @@ fn main() {
 
     let opt = Opt::from_clap(&app.get_matches());
 
-    let first_arg = &opt.file;
+    let pathes = &opt.files;
 
-    match first_arg {
-        None => {
+    match pathes {
+        p if p.is_empty() => {
             let mut out = io::stdout();
             let _ = app2.write_help(&mut out);
 
             return;
         }
-        Some(path) if path.exists() => {
-            let absolute_path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
-            let folder_name = (path.file_name().unwrap_or(OsStr::new("示例字符串")))
-                .to_str()
-                .unwrap_or("");
-
-            println!(
-                "此处已有同名文件 {}\n位于: {}",
-                folder_name.magenta(),
-                absolute_path.to_string_lossy().green().underline()
-            );
-        }
-
-        Some(path) if path.to_string_lossy().ends_with("/") => {
-            create_dir(path);
-        }
-
-        Some(path) => {
-            create_file(path);
+        p => {
+            p.iter().for_each(create_one);
         }
     }
 }
 
 fn create_file(path: &Path) {
     if let Some(parent) = path.parent() {
+        // 如果父文件夹不存在, 则创建父文件夹.
         if !parent.exists() {
-            // 如果父文件夹不存在, 则创建父文件夹.
             let re = fs::create_dir_all(parent);
             match re {
                 Err(err) => {
@@ -76,14 +59,39 @@ fn create_file(path: &Path) {
         Ok(_) => {
             let absolute_path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
 
+            let bbb = absolute_path.to_str().unwrap_or("");
+
+            let parent = bbb.trim_end_matches(path.to_str().unwrap_or(""));
+
             let filename = (path.file_name().unwrap_or(OsStr::new("示例字符串")))
                 .to_str()
                 .unwrap_or("");
 
+            // 标记出新创建的 parent folders
+            let created_parent = || -> String {
+                let re = String::new()
+                    + path
+                        .parent()
+                        .unwrap_or(Path::new(""))
+                        .to_str()
+                        .unwrap_or("");
+
+                if re.is_empty() {
+                    return String::new();
+                }
+
+                // path.parent().unwrap().to_str() 末尾没有 '/',
+                // 所以在此处手动加上.
+                return re + "/";
+            }();
+
             println!(
-                "文件创建成功\n{} at {}",
-                filename.magenta(),
-                absolute_path.to_string_lossy().green().underline()
+                "   {} {} 创建成功 at {}{}{}",
+                "file",
+                filename.bright_yellow(),
+                parent.green(),
+                created_parent.bright_cyan(),
+                filename.bright_yellow(),
             )
         }
     };
@@ -97,10 +105,19 @@ fn create_dir(path: &Path) {
     match fs::create_dir_all(path) {
         Ok(_) => {
             let absolute_path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+
+            let abs_str = absolute_path.to_str().unwrap_or("");
+
+            // 标记出 之前就存在的, 并不是我们创建的.
+            let parent =
+                abs_str.trim_end_matches(path.to_str().unwrap_or("").trim_end_matches("/"));
+
             println!(
-                "文件夹创建成功。\n{} at {}",
-                folder_name.magenta(),
-                absolute_path.to_string_lossy().green().underline()
+                "   {} {} 创建成功 at {}{}",
+                "folder",
+                folder_name.bright_cyan(),
+                parent.green(),
+                path.to_string_lossy().bright_cyan(),
             );
         }
         Err(e) => eprintln!("创建文件夹 {:?} 失败: {}", folder_name, e),
@@ -115,10 +132,51 @@ use structopt::StructOpt;
 #[structopt(name = "new")]
 struct Opt {
     /// 文件名 | 文件夹名 | path/to/new/file.txt
-    #[structopt(name = "filename or foldername/", parse(from_os_str))]
-    file: Option<PathBuf>,
+    #[structopt(parse(from_os_str))]
+    files: Vec<PathBuf>,
 }
 
 // command -- function
 // flag   -- function | enum
 // <name> -- paramter string | number | bool | Array<T> | enum
+
+fn create_one(pathbuf: &PathBuf) {
+    match pathbuf {
+        path if path.exists() => {
+            let absolute_path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+            let folder_name = (path.file_name().unwrap_or(OsStr::new("示例字符串")))
+                .to_str()
+                .unwrap_or("");
+
+            println!(
+                "此处已有同名文件 {}\n位于: {}",
+                folder_name.magenta(),
+                absolute_path.to_string_lossy().green().underline()
+            );
+        }
+
+        path if path.to_string_lossy().ends_with("/") => {
+            create_dir(path);
+        }
+
+        path => {
+            create_file(path);
+        }
+    }
+}
+
+
+// new hello.txt  
+// new folder/      # 文件夹馍为一定要有 '/'
+// new a.txt b.txt c/ d.txt e/in_e.txt 
+
+
+
+
+
+
+
+
+
+
+

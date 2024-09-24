@@ -17,6 +17,10 @@ pub fn usage() -> String {
         "new folder_1/filename.txt".bright_yellow(),
         "# 在当前目录创建 文件夹/文件",
     ]);
+    table.add_row(row![
+        "new a.txt b.txt c/ d.txt e/in_e.txt".bright_yellow(),
+        "# 在当前目录创建多个文件或文件夹",
+    ]);
 
     let format = format::FormatBuilder::new()
         .separators(
