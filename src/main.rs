@@ -4,7 +4,7 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::path::Path;
 use std::process::exit;
-use std::{fs, io, string};
+use std::{fs, io};
 
 mod messages;
 
@@ -34,9 +34,11 @@ fn main() {
 }
 
 fn create_file(path: &Path) {
+    let mut did_parent_created = false;
     if let Some(parent) = path.parent() {
         // 如果父文件夹不存在, 则创建父文件夹.
         if !parent.exists() {
+            did_parent_created = true;
             let re = fs::create_dir_all(parent);
             match re {
                 Err(err) => {
@@ -68,7 +70,7 @@ fn create_file(path: &Path) {
                 .unwrap_or("");
 
             // 标记出新创建的 parent folders
-            let created_parent = || -> String {
+            let created_parent = || -> ColoredString {
                 let re = String::new()
                     + path
                         .parent()
@@ -77,12 +79,17 @@ fn create_file(path: &Path) {
                         .unwrap_or("");
 
                 if re.is_empty() {
-                    return String::new();
+                    return ColoredString::from("");
                 }
 
                 // path.parent().unwrap().to_str() 末尾没有 '/',
                 // 所以在此处手动加上.
-                return re + "/";
+                let final_re = re + "/";
+                if did_parent_created {
+                    return final_re.bright_cyan();
+                } else {
+                    return final_re.green();
+                }
             }();
 
             println!(
@@ -90,7 +97,7 @@ fn create_file(path: &Path) {
                 "file",
                 filename.bright_yellow(),
                 parent.green(),
-                created_parent.bright_cyan(),
+                created_parent,
                 filename.bright_yellow(),
             )
         }
@@ -164,19 +171,3 @@ fn create_one(pathbuf: &PathBuf) {
         }
     }
 }
-
-
-// new hello.txt  
-// new folder/      # 文件夹馍为一定要有 '/'
-// new a.txt b.txt c/ d.txt e/in_e.txt 
-
-
-
-
-
-
-
-
-
-
-
