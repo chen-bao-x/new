@@ -13,7 +13,7 @@ fn main() {
     let app = Opt::clap()
         .usage(binding.as_str())
         .about("new -- 一个快速创建文件和文件夹的程序")
-        .author("chen bao");
+        .author("https://github.com/chen-bao-x/new");
     let app2 = app.clone();
 
     let opt = Opt::from_clap(&app.get_matches());
