@@ -1,43 +1,47 @@
+use chenbao_cmd::*;
 use colored::*;
-use messages::usage;
 use std::ffi::OsStr;
+use std::fs;
 use std::fs::File;
 use std::path::Path;
 use std::process::exit;
-use std::{fs, io};
 
-mod cli;
-mod messages;
+pub fn run() {
+    App::new()
+        .about("new -- 一个快速创建文件和文件夹的程序")
+        .author("https://github.com/chen-bao-x/new")
+        .add_command(
+            cmd!("file")
+                .short_name("f")
+                .about("创建文件")
+                .add_example("new f filename.txt", "在当前目录创建文件")
+                .add_example("new f foldername/", "在当前目录创建文件夹")
+                .add_example("new f folder_1/filename.txt", "在当前目录创建 文件夹/文件")
+                .add_example("new f a.txt b.txt d.txt e/in_e.txt", "在创建多个文件或文件夹")
+                .action(Arg::PathMutiple(&|x| {
+                    println!("{x:?}");
+                    x.iter().for_each(|f| {
+                        create_file(f);
+                    });
+                })),
+        )
+        .add_command(
+            cmd!("directory")
+                .short_name("d")
+                .about("创建文件夹")
+                .add_example("new d directory_name", "在当前目录创建文件夹.")
+                .add_example("new d folder_1 foler_2 foler_3", "在当前目录创建多个文件夹")
+                .action(Arg::PathMutiple(&|x| {
+                    println!("{x:?}");
 
-fn main(){
-    cli::run();
+                    x.iter().for_each(|f| {
+                        create_dir(f);
+                    });
+                })),
+        )
+        .debug_check()
+        .run();
 }
-
-// fn main() {
-//     cli::run();
-//     return;
-
-//     let binding = usage();
-//     let app = Opt::clap()
-//         .usage(binding.as_str())
-//         .about("new -- 一个快速创建文件和文件夹的程序")
-//         .author("https://github.com/chen-bao-x/new");
-//     let app2 = app.clone();
-
-//     let opt = Opt::from_clap(&app.get_matches());
-
-//     let pathes = &opt.files;
-
-//     match pathes {
-//         p if p.is_empty() => {
-//             let mut out = io::stdout();
-//             let _ = app2.write_help(&mut out);
-//         }
-//         p => {
-//             p.iter().for_each(create_one);
-//         }
-//     }
-// }
 
 fn create_file(path: &Path) {
     let mut did_parent_created = false;
@@ -129,46 +133,5 @@ fn create_dir(path: &Path) {
             );
         }
         Err(e) => eprintln!("创建文件夹 {:?} 失败: {}", folder_name, e),
-    }
-}
-
-use std::path::PathBuf;
-use structopt::StructOpt;
-
-/// A basic example
-#[derive(StructOpt, Debug)]
-#[structopt(name = "new")]
-struct Opt {
-    /// 文件名 | 文件夹名 | path/to/new/file.txt
-    #[structopt(parse(from_os_str))]
-    files: Vec<PathBuf>,
-}
-
-// command -- function
-// flag   -- function | enum
-// <name> -- paramter string | number | bool | Array<T> | enum
-
-fn create_one(pathbuf: &PathBuf) {
-    match pathbuf {
-        path if path.exists() => {
-            let absolute_path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
-            let folder_name = (path.file_name().unwrap_or(OsStr::new("示例字符串")))
-                .to_str()
-                .unwrap_or("");
-
-            println!(
-                "此处已有同名文件 {}\n位于: {}",
-                folder_name.magenta(),
-                absolute_path.to_string_lossy().green().underline()
-            );
-        }
-
-        path if path.to_string_lossy().ends_with("/") => {
-            create_dir(path);
-        }
-
-        path => {
-            create_file(path);
-        }
     }
 }
