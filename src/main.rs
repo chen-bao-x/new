@@ -24,8 +24,6 @@ fn main() {
         p if p.is_empty() => {
             let mut out = io::stdout();
             let _ = app2.write_help(&mut out);
-
-            return;
         }
         p => {
             p.iter().for_each(create_one);
@@ -40,12 +38,9 @@ fn create_file(path: &Path) {
         if !parent.exists() {
             did_parent_created = true;
             let re = fs::create_dir_all(parent);
-            match re {
-                Err(err) => {
-                    eprintln!("{:}", err);
-                    exit(0)
-                }
-                Ok(_) => {}
+            if let Err(err) = re {
+                eprintln!("{:}", err);
+                exit(0)
             }
         }
     }
@@ -86,15 +81,14 @@ fn create_file(path: &Path) {
                 // 所以在此处手动加上.
                 let final_re = re + "/";
                 if did_parent_created {
-                    return final_re.bright_cyan();
+                    final_re.bright_cyan()
                 } else {
-                    return final_re.green();
+                    final_re.green()
                 }
             }();
 
             println!(
-                "   {} {} 创建成功 at {}{}{}",
-                "file",
+                "   file {} 创建成功 at {}{}{}",
                 filename.bright_yellow(),
                 parent.green(),
                 created_parent,
@@ -120,8 +114,7 @@ fn create_dir(path: &Path) {
                 abs_str.trim_end_matches(path.to_str().unwrap_or("").trim_end_matches("/"));
 
             println!(
-                "   {} {} 创建成功 at {}{}",
-                "folder",
+                "   folder {} 创建成功 at {}{}",
                 folder_name.bright_cyan(),
                 parent.green(),
                 path.to_string_lossy().bright_cyan(),

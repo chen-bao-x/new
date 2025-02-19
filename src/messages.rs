@@ -34,5 +34,5 @@ pub fn usage() -> String {
 
     // Print the table to stdout
     // table.printstd();
-    return table.to_string();
+    table.to_string()
 }
