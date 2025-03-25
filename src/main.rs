@@ -8,6 +8,7 @@ use std::process::exit;
 
 pub fn main() {
     App::new()
+        
         .about("new -- 一个快速创建文件和文件夹的程序")
         .author("https://github.com/chen-bao-x/new")
         .add_command(
@@ -26,6 +27,7 @@ pub fn main() {
                     x.iter().for_each(|f| {
                         create_file(f);
                     });
+                    x.iter().for_each(|f| create_file(f));
                 })),
         )
         .add_command(

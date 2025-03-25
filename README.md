@@ -19,3 +19,20 @@
 ~/test>
 
 ```
+
+是否允许用户自定义命令?
+比如 自定义脚本. like this:
+name String
+args String
+about String 
+command String
+
+name rust-proj
+args String
+about "创建 rust binary project"
+command "cargo new "
+
+rust-proj $1
+```
+cargo new $1
+```
