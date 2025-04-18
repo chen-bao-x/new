@@ -17,6 +17,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chenbao_cmd"
 version = "0.1.0"
+source = "git+ssh://git@github.com/chen-bao-x/chenbao_cmd.git?branch=master#4c0b2b240b86b4f70f3da9bbb4061f43ed610d19"
 dependencies = [
  "chenbao_cmd_macro",
  "dialoguer",
@@ -29,6 +30,7 @@ dependencies = [
 [[package]]
 name = "chenbao_cmd_macro"
 version = "0.1.0"
+source = "git+ssh://git@github.com/chen-bao-x/chenbao_cmd.git?branch=master#4c0b2b240b86b4f70f3da9bbb4061f43ed610d19"
 dependencies = [
  "quote",
  "syn",

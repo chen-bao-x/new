@@ -4,8 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-chenbao_cmd = {path = "/Users/chenbao/GitHub/chenbao_cmd"}
-
-# prettytable-rs = "0.10.0"
-# structopt = "0.3.26"
+chenbao_cmd = { git = "ssh://git@github.com/chen-bao-x/chenbao_cmd.git", branch = "master" }
 colored = "3.0.0"

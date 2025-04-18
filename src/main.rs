@@ -8,7 +8,6 @@ use std::process::exit;
 
 pub fn main() {
     App::new()
-        
         .about("new -- 一个快速创建文件和文件夹的程序")
         .author("https://github.com/chen-bao-x/new")
         .add_command(
@@ -16,11 +15,10 @@ pub fn main() {
                 .short_name("f")
                 .about("创建文件")
                 .add_example("new f filename.txt", "在当前目录创建文件")
-                .add_example("new f foldername/", "在当前目录创建文件夹")
-                .add_example("new f folder_1/filename.txt", "在当前目录创建 文件夹/文件")
+                .add_example("new f folder_1/filename.txt", "在当前目录创建文件")
                 .add_example(
                     "new f a.txt b.txt d.txt e/in_e.txt",
-                    "在创建多个文件或文件夹",
+                    "在创建多个文件",
                 )
                 .action(Arg::PathMutiple(&|x| {
                     println!("{x:?}");
@@ -38,7 +36,6 @@ pub fn main() {
                 .add_example("new d folder_1 foler_2 foler_3", "在当前目录创建多个文件夹")
                 .action(Arg::PathMutiple(&|x| {
                     println!("{x:?}");
-
                     x.iter().for_each(|f| {
                         create_dir(f);
                     });
