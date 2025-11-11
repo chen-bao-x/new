@@ -1,7 +1,10 @@
+
+
 [package]
 name = "new"
 version = "0.1.0"
 edition = "2021"
+
 
 [dependencies]
 chenbao_cmd = { git = "ssh://git@github.com/chen-bao-x/chenbao_cmd.git", branch = "master" }

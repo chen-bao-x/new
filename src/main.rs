@@ -16,15 +16,11 @@ pub fn main() {
                 .about("创建文件")
                 .add_example("new f filename.txt", "在当前目录创建文件")
                 .add_example("new f folder_1/filename.txt", "在当前目录创建文件")
-                .add_example(
-                    "new f a.txt b.txt d.txt e/in_e.txt",
-                    "在创建多个文件",
-                )
+                .add_example("new f a.txt b.txt d.txt e/in_e.txt", "在创建多个文件")
                 .action(Arg::PathMutiple(&|x| {
+                    #[cfg(debug_assertions)]
                     println!("{x:?}");
-                    x.iter().for_each(|f| {
-                        create_file(f);
-                    });
+
                     x.iter().for_each(|f| create_file(f));
                 })),
         )
@@ -35,10 +31,10 @@ pub fn main() {
                 .add_example("new d directory_name", "在当前目录创建文件夹.")
                 .add_example("new d folder_1 foler_2 foler_3", "在当前目录创建多个文件夹")
                 .action(Arg::PathMutiple(&|x| {
+                    #[cfg(debug_assertions)]
                     println!("{x:?}");
-                    x.iter().for_each(|f| {
-                        create_dir(f);
-                    });
+
+                    x.iter().for_each(|f| create_dir(f));
                 })),
         )
         .debug_check()
@@ -65,7 +61,7 @@ fn create_file(path: &Path) {
     match re {
         Err(err) => {
             print!("创建文件时出错: ");
-            eprintln! {"path: {:?}  err: {}",path,err}
+            eprintln!("path: {:?}  err: {}", path, err);
         }
         Ok(_) => {
             let absolute_path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
